@@ -1,8 +1,8 @@
 ﻿using System.Net.Http;
 using CrossCutting;
 using Doppler.Sap.Job.Service.DopplerCurrencyService;
-using Doppler.Sap.Job.Service.Logger;
 using Doppler.Sap.Job.Service.Settings;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace Doppler.Jobs.Test
@@ -12,8 +12,8 @@ namespace Doppler.Jobs.Test
         public static DopplerCurrencyService CreateSut(
             IHttpClientFactory httpClientFactory = null,
             HttpClientPoliciesSettings httpClientPoliciesSettings = null,
-            DopplerCurrencySettings dopplerCurrencySettings = null,
-            ILoggerAdapter<DopplerCurrencyService> logger = null,
+            DopplerCurrencyServiceSettings dopplerCurrencySettings = null,
+            ILogger<DopplerCurrencyService> loggerCurrencyService = null,
             TimeZoneJobConfigurations timeZoneJobConfigurations = null)
         {
 
@@ -21,7 +21,7 @@ namespace Doppler.Jobs.Test
                 httpClientFactory,
                 httpClientPoliciesSettings,
                 dopplerCurrencySettings,
-                logger ?? Mock.Of<ILoggerAdapter<DopplerCurrencyService>>(),
+                loggerCurrencyService ?? Mock.Of<ILogger<DopplerCurrencyService>>(),
                 timeZoneJobConfigurations ?? new TimeZoneJobConfigurations
                 {
                     TimeZoneJobs = "Argentina Standard Time"

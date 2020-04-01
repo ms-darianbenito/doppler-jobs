@@ -7,7 +7,7 @@ using System.Security.Authentication;
 using CrossCutting;
 using Doppler.Sap.Job.Service;
 using Doppler.Sap.Job.Service.DopplerCurrencyService;
-using Doppler.Sap.Job.Service.Logger;
+using Doppler.Sap.Job.Service.DopplerSapService;
 using Doppler.Sap.Job.Service.Settings;
 using Hangfire;
 using Hangfire.Storage.SQLite;
@@ -34,8 +34,6 @@ namespace Doppler.Service.Job.Server
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton(typeof(ILoggerAdapter<>), typeof(LoggerAdapter<>));
-
             services.AddHangfire(x =>
             {
                 x.UseSQLiteStorage();
@@ -56,25 +54,25 @@ namespace Doppler.Service.Job.Server
                 .SetHandlerLifetime(TimeSpan.FromMinutes(5))
                 .AddPolicyHandler(GetRetryPolicy(httpClientPolicies.Policies.RetryAttemps));
 
-            var dopplerCurrencySettings = new DopplerCurrencySettings
+            var dopplerCurrencySettings = new DopplerCurrencyServiceSettings
             {
-                CurrencyCodeList = Configuration.GetSection("DopplerCurrencyService:CurrencyCode")
+                CurrencyCodeList = Configuration.GetSection("DopplerCurrencyServiceSettings:CurrencyCode")
                     .Get<List<string>>()
             };
-            Configuration.GetSection("DopplerCurrencyService").Bind(dopplerCurrencySettings);
+            Configuration.GetSection(nameof(DopplerCurrencyServiceSettings)).Bind(dopplerCurrencySettings);
             services.AddSingleton(dopplerCurrencySettings);
 
             var jobsConfig = new TimeZoneJobConfigurations
             {
-                TimeZoneJobs = $"{Configuration["TimeZoneJobs"]}"
+                TimeZoneJobs = Configuration["TimeZoneJobs"]
             };
+            services.AddSingleton(jobsConfig);
 
-            services.AddTransient(sp => new DopplerCurrencyService(
-                sp.GetService<IHttpClientFactory>(), 
-                httpClientPolicies,
-                dopplerCurrencySettings,
-                sp.GetService<ILoggerAdapter<DopplerCurrencyService>>(),
-                jobsConfig));
+            services.AddTransient<DopplerCurrencyService>();
+
+            services.Configure<DopplerSapServiceSettings>(Configuration.GetSection(nameof(DopplerSapServiceSettings)));
+
+            services.AddTransient<DopplerSapService>();
 
             ConfigureJob(services);
             ConfigureJobsScheduler(services, jobsConfig);
@@ -115,18 +113,19 @@ namespace Doppler.Service.Job.Server
         {
             var jobConfig = new RecurringJobConfiguration
             {
-                Identifier = $"{Configuration["Jobs:WorkerServiceJob:Identifier"]}",
-                IntervalCronExpression = $"{Configuration["Jobs:WorkerServiceJob:IntervalCronExpression"]}"
+                Identifier = Configuration["Jobs:SapServiceJob:Identifier"],
+                IntervalCronExpression = Configuration["Jobs:SapServiceJob:IntervalCronExpression"]
             };
 
             services.AddTransient(sp => new DopplerSapJob(
-                sp.GetService<ILoggerAdapter<DopplerSapJob>>(),
+                sp.GetService<ILogger<DopplerSapJob>>(),
                 jobConfig.IntervalCronExpression, 
                 jobConfig.Identifier,
-                services.BuildServiceProvider().GetService<DopplerCurrencyService>()));
+                services.BuildServiceProvider().GetService<DopplerCurrencyService>(),
+                services.BuildServiceProvider().GetService<DopplerSapService>()));
         }
 
-        private void ConfigureJobsScheduler(IServiceCollection services, TimeZoneJobConfigurations jobsConfig)
+        private static void ConfigureJobsScheduler(IServiceCollection services, TimeZoneJobConfigurations jobsConfig)
         {
             services.AddTransient(sp =>
                 new JobScheduler(new List<IRecurringJob>

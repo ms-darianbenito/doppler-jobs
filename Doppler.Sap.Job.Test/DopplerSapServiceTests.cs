@@ -1,71 +1,44 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Doppler.Sap.Job.Service.DopplerSapService;
+using Doppler.Sap.Job.Service.Entities;
 using Doppler.Sap.Job.Service.Settings;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Moq;
 using Moq.Protected;
 using Xunit;
 
 namespace Doppler.Jobs.Test
 {
-    public class DopplerCurrencyServiceTests
+    public class DopplerSapServiceTests
     {
         private readonly Mock<IHttpClientFactory> _httpClientFactoryMock;
         private readonly Mock<HttpMessageHandler> _httpMessageHandlerMock;
         private readonly HttpClient _httpClient;
+        private readonly Mock<IOptionsMonitor<DopplerSapServiceSettings>> _dopplerSapServiceSettingsMock;
 
-        public DopplerCurrencyServiceTests()
+        public DopplerSapServiceTests()
         {
+            _dopplerSapServiceSettingsMock = new Mock<IOptionsMonitor<DopplerSapServiceSettings>>();
+            _dopplerSapServiceSettingsMock.Setup(x => x.CurrentValue)
+                .Returns(new DopplerSapServiceSettings
+                {
+                    Url = "https://localhost:5001/SetCurrencyRate"
+                });
+
             _httpClientFactoryMock = new Mock<IHttpClientFactory>();
             _httpMessageHandlerMock = new Mock<HttpMessageHandler>();
             _httpClient = new HttpClient(_httpMessageHandlerMock.Object);
         }
 
         [Fact]
-        public async Task DopplerCurrencyService_ShouldBeHttpStatusCodeOk_WhenCurrencyCodeIsCorrectAndDateIsNotHoliday()
+        public async Task DopplerSapService_ShouldBeReturn_WhenDopplerSapServiceReturnHttpBadRequest()
         {
-            _httpMessageHandlerMock.Protected()
-                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-                .ReturnsAsync(new HttpResponseMessage
-                {
-                    StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent($@"{{'entity':{{'date':'2020-03-18','saleValue':65.0000,
-                       'buyValue':'20.30','currencyName':'Peso Argentino', 'currencyCode':'ARS'}},'success':true,'errors':{{}}}}")
-                });
 
-            _httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>()))
-                .Returns(_httpClient);
-
-            var service = CreateSutCurrencyServiceTests.CreateSut(
-                _httpClientFactoryMock.Object,
-                new HttpClientPoliciesSettings
-                {
-                    ClientName = "test"
-                },
-                new DopplerCurrencyServiceSettings
-                {
-                    Url = "https://localhost:5001/Currency/",
-                    CurrencyCodeList = new List<string> { "ARS" }
-                }
-            );
-
-            var result = await service.GetCurrencyByCode();
-
-            Assert.NotEmpty(result);
-
-            var currency = result[0].Entity;
-            Assert.Equal("2020-03-18", currency.Date);
-            Assert.Equal(65.0000M, currency.SaleValue);
-            Assert.Equal(20.30M, currency.BuyValue);
-            Assert.Equal("Peso Argentino", currency.CurrencyName);
-            Assert.Equal("ARS", currency.CurrencyCode);
-        }
-
-        [Fact]
-        public async Task DopplerCurrencyService_ShouldBeEmptyList_WhenCurrencyCodeIsCorrectAndDateIsNotHoliday()
-        {
             _httpMessageHandlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync(new HttpResponseMessage
@@ -77,22 +50,47 @@ namespace Doppler.Jobs.Test
             _httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>()))
                 .Returns(_httpClient);
 
-            var service = CreateSutCurrencyServiceTests.CreateSut(
+            var service = new DopplerSapService(
                 _httpClientFactoryMock.Object,
                 new HttpClientPoliciesSettings
                 {
                     ClientName = "test"
                 },
-                new DopplerCurrencyServiceSettings
+                _dopplerSapServiceSettingsMock.Object, 
+                Mock.Of<ILogger<DopplerSapService>>());
+
+            var result = await service.SendCurrency(new List<CurrencyResponse>());
+
+            Assert.Equal(HttpStatusCode.BadRequest, result.StatusCode);
+        }
+
+        [Fact]
+        public async Task DopplerSapService_ShouldBeReturnHttpResponseOk_WhenSapCurrencyServiceReturnOk()
+        {
+
+            _httpMessageHandlerMock.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
                 {
-                    Url = "https://localhost:5001/Currency/",
-                    CurrencyCodeList = new List<string> { "ARS" }
-                }
-            );
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent("")
+                });
 
-            var result = await service.GetCurrencyByCode();
+            _httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>()))
+                .Returns(_httpClient);
 
-            Assert.Empty(result);
+            var service = new DopplerSapService(
+                _httpClientFactoryMock.Object,
+                new HttpClientPoliciesSettings
+                {
+                    ClientName = "test"
+                },
+                _dopplerSapServiceSettingsMock.Object,
+                Mock.Of<ILogger<DopplerSapService>>());
+
+            var result = await service.SendCurrency(new List<CurrencyResponse>());
+
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
         }
     }
 }
