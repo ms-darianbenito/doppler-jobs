@@ -94,7 +94,7 @@ else
 fi
 # endregion Ugly code to deal with versions
 
-imageName=fromdoppler/doppler-currency
+imageName=fromdoppler/doppler-jobs
 canonicalTag=${preReleasePrefix}${versionFullForTag}
 
 docker build \
