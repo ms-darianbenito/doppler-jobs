@@ -47,7 +47,7 @@ namespace CrossCutting.DopplerSapService
         public async Task<HttpResponseMessage> SendCurrency(IList<CurrencyResponse> currencyList)
         {
             var uri = _dopplerSapServiceSettings.Url;
-            _logger.LogInformation($"Building http request with url {uri}");
+            _logger.LogInformation("Building http request with url {uri}.", uri);
 
             var httpRequest = new HttpRequestMessage
             {
@@ -66,8 +66,7 @@ namespace CrossCutting.DopplerSapService
             }
             catch (Exception e)
             {
-                _logger.LogError(e,
-                    $"Error occurred trying to send information to Doppler SAP return http code {httpResponse.StatusCode}.");
+                _logger.LogError(e, "Error occurred trying to send information to SAP return http {code}.", httpResponse.StatusCode);
                 throw;
             }
 
@@ -77,7 +76,7 @@ namespace CrossCutting.DopplerSapService
         public async Task<HttpResponseMessage> SendUserBillings(IList<UserBilling> userBillingList)
         {
             var uri = _dopplerSapServiceSettings.Url;
-            _logger.LogInformation($"Building http request with url {uri}");
+            _logger.LogInformation("Building http request with url {uri}.", uri);
 
             var httpRequest = new HttpRequestMessage
             {
@@ -97,7 +96,7 @@ namespace CrossCutting.DopplerSapService
             catch (Exception e)
             {
                 _logger.LogError(e,
-                    $"Error occurred trying to send information to Doppler SAP return http code {httpResponse.StatusCode}.");
+                    "Error occurred trying to send information to Doppler SAP return http {code}·", httpResponse.StatusCode);
                 throw;
             }
 

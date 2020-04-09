@@ -47,7 +47,7 @@ namespace Doppler.Currency.Job.DopplerCurrencyService
                 try { 
                     var uri = new Uri(_dopplerCurrencySettings.Url + $"{currencyCode}/{cstTime.Year}-{cstTime.Month}-{cstTime.Day}");
                     
-                    _logger.LogInformation($"Building http request with url {uri}"); 
+                    _logger.LogInformation("Building http request with url {uri}", uri); 
                     var httpRequest = new HttpRequestMessage 
                     {
                         RequestUri = uri, 
@@ -68,7 +68,7 @@ namespace Doppler.Currency.Job.DopplerCurrencyService
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e,$"Error GetCurrency for {currencyCode}.");
+                    _logger.LogError(e,"Error GetCurrency for {currencyCode}.", currencyCode);
                     throw;
                 }
             }
