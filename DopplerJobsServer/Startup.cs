@@ -89,7 +89,10 @@ namespace Server
                 app.UseDeveloperExceptionPage();
             }
 
-            app.UseHangfireDashboard();
+            app.UseHangfireDashboard("/hangfire", new DashboardOptions
+            {
+                Authorization = new[] { new HangfireAuthorizationFilter() }
+            });
             app.UseHangfireServer(new BackgroundJobServerOptions
             {
                 WorkerCount = 1
