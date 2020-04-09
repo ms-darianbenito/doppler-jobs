@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Security.Authentication;
 using CrossCutting;
 using CrossCutting.DopplerSapService;
@@ -22,6 +23,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Polly;
 using Polly.Extensions.Http;
+using TimeZoneConverter;
 
 namespace Server
 {
@@ -65,7 +67,7 @@ namespace Server
 
             var jobsConfig = new TimeZoneJobConfigurations
             {
-                TimeZoneJobs = Configuration["TimeZoneJobs"]
+                TimeZoneJobs = GetTimeZoneByOperativeSystem()
             };
             services.AddSingleton(jobsConfig);
 
@@ -119,18 +121,25 @@ namespace Server
         private void ConfigureJobsScheduler()
         {
             JobStorage.Current = new SQLiteStorage("Hangfire.db");
+            var tz = GetTimeZoneByOperativeSystem();
 
             RecurringJob.AddOrUpdate<DopplerBillingJob>(
                 Configuration["Jobs:DopplerBillingJob:Identifier"],
                 job => job.Run(),
                 Configuration["Jobs:DopplerBillingJob:IntervalCronExpression"],
-                TimeZoneInfo.FindSystemTimeZoneById(Configuration["TimeZoneJobs"]));
+                TimeZoneInfo.FindSystemTimeZoneById(tz));
 
             RecurringJob.AddOrUpdate<DopplerCurrencyJob>(
                 Configuration["Jobs:DopplerCurrencyJob:Identifier"],
                 job => job.Run(),
                 Configuration["Jobs:DopplerCurrencyJob:IntervalCronExpression"],
-                TimeZoneInfo.FindSystemTimeZoneById(Configuration["TimeZoneJobs"]));
+                TimeZoneInfo.FindSystemTimeZoneById(tz));
+        }
+
+        private string GetTimeZoneByOperativeSystem()
+        {
+            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Configuration["TimeZoneJobs"]
+                : TZConvert.WindowsToIana(Configuration["TimeZoneJobs"]);
         }
     }
 }
