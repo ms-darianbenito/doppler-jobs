@@ -1,7 +1,7 @@
 ﻿using Hangfire.Annotations;
 using Hangfire.Dashboard;
 
-namespace Server
+namespace Doppler.Jobs.Server
 {
     public class HangfireAuthorizationFilter : IDashboardAuthorizationFilter
     {

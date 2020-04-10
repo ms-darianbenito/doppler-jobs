@@ -25,7 +25,7 @@ using Polly;
 using Polly.Extensions.Http;
 using TimeZoneConverter;
 
-namespace Server
+namespace Doppler.Jobs.Server
 {
     public class Startup
     {

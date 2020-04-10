@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DopplerJobsServer\Server.csproj" />
+    <ProjectReference Include="..\DopplerJobsServer\Doppler.Jobs.Server.csproj" />
   </ItemGroup>
 
 </Project>

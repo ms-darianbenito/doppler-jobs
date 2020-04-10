@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using Doppler.Jobs.Server;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
-using Server;
 
 namespace Doppler.Jobs.Test.Integration
 {

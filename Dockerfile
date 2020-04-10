@@ -1,7 +1,7 @@
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS restore
 WORKDIR /src
 COPY Doppler.Jobs.sln ./
-COPY ["DopplerJobsServer/Server.csproj", "DopplerJobsServer/"]
+COPY ["DopplerJobsServer/Doppler.Jobs.Server.csproj", "DopplerJobsServer/"]
 COPY ["CrossCutting/CrossCutting.csproj", "CrossCutting/"]
 COPY ["DopplerCurrencyJob/Doppler.Currency.Job.csproj", "DopplerCurrencyJob/"]
 COPY ["DopplerBillingJob/Doppler.Billing.Job.csproj", "DopplerBillingJob/"]
@@ -16,7 +16,7 @@ FROM build AS test
 RUN dotnet test
 
 FROM build AS publish
-RUN dotnet publish "DopplerJobsServer/Server.csproj" -c Release -o /app/publish
+RUN dotnet publish "DopplerJobsServer/Doppler.Jobs.Server.csproj" -c Release -o /app/publish
 
 FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-buster-slim AS final
 WORKDIR /app
@@ -26,4 +26,4 @@ COPY --from=publish /app/publish .
 ARG version=unknown
 # TODO: configure static files in the service and copy version.txt to the right folder
 RUN echo $version > /app/version.txt
-ENTRYPOINT ["dotnet", "Server.dll"]
+ENTRYPOINT ["dotnet", "Doppler.Jobs.Server.dll"]

@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
 using Serilog;
 
-namespace Server
+namespace Doppler.Jobs.Server
 {
     public class Program
     {

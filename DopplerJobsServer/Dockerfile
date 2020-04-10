@@ -4,19 +4,19 @@ EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
-COPY ["DopplerJobsServer/Server.csproj", "DopplerJobsServer/"]
+COPY ["DopplerJobsServer/Doppler.Jobs.Server.csproj", "DopplerJobsServer/"]
 COPY ["DopplerBillingJob/Doppler.Billing.Job.csproj", "DopplerBillingJob/"]
 COPY ["CrossCutting/CrossCutting.csproj", "CrossCutting/"]
 COPY ["DopplerCurrencyJob/Doppler.Currency.Job.csproj", "DopplerCurrencyJob/"]
-RUN dotnet restore "DopplerJobsServer/Server.csproj"
+RUN dotnet restore "DopplerJobsServer/Doppler.Jobs.Server.csproj"
 COPY . .
 WORKDIR "/src/DopplerJobsServer"
-RUN dotnet build "Server.csproj" -c Release -o /app/build
+RUN dotnet build "Doppler.Jobs.Server.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "Server.csproj" -c Release -o /app/publish
+RUN dotnet publish "Doppler.Jobs.Server.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Server.dll"]
+ENTRYPOINT ["dotnet", "Doppler.Jobs.Server.dll"]
