@@ -16,8 +16,9 @@ namespace Doppler.Currency.Job.DopplerCurrencyService
     {
         private readonly DopplerCurrencyServiceSettings _dopplerCurrencySettings;
         private readonly TimeZoneJobConfigurations _jobConfig;
-        private readonly HttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<DopplerCurrencyService> _logger;
+        private readonly HttpClientPoliciesSettings _httpClientPoliciesSettings;
 
         public DopplerCurrencyService(
             IHttpClientFactory httpClientFactory,
@@ -28,8 +29,9 @@ namespace Doppler.Currency.Job.DopplerCurrencyService
         {
             _dopplerCurrencySettings = dopplerCurrencySettings;
             _jobConfig = jobConfig;
-            _httpClient = httpClientFactory.CreateClient(httpClientPoliciesSettings.ClientName);
             _logger = logger;
+            _httpClientFactory = httpClientFactory;
+            _httpClientPoliciesSettings = httpClientPoliciesSettings;
         }
 
         public async Task<IList<CurrencyResponse>> GetCurrencyByCode()
@@ -55,8 +57,9 @@ namespace Doppler.Currency.Job.DopplerCurrencyService
 
                     };
                     
-                    _logger.LogInformation("Sending request to Doppler Currency Api."); 
-                    var httpResponse = await _httpClient.SendAsync(httpRequest).ConfigureAwait(false);
+                    _logger.LogInformation("Sending request to Doppler Currency Api.");
+                    var client = _httpClientFactory.CreateClient(_httpClientPoliciesSettings.ClientName);
+                    var httpResponse = await client.SendAsync(httpRequest).ConfigureAwait(false);
 
                     if (!httpResponse.IsSuccessStatusCode)
                         continue;
