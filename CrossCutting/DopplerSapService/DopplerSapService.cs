@@ -17,8 +17,9 @@ namespace CrossCutting.DopplerSapService
     {
         private readonly DopplerSapServiceSettings _dopplerSapServiceSettings;
         private readonly JsonSerializerSettings _serializationSettings;
-        private readonly HttpClient _httpClient;
+        private readonly IHttpClientFactory _httpClientFactory;
         private readonly ILogger<DopplerSapService> _logger;
+        private readonly HttpClientPoliciesSettings _httpClientPoliciesSettings;
 
         public DopplerSapService(
             IHttpClientFactory httpClientFactory,
@@ -27,8 +28,9 @@ namespace CrossCutting.DopplerSapService
             ILogger<DopplerSapService> logger)
         {
             _dopplerSapServiceSettings = dopplerSapServiceSettings.CurrentValue;
-            _httpClient = httpClientFactory.CreateClient(httpClientPoliciesSettings.ClientName);
+            _httpClientFactory = httpClientFactory;
             _logger = logger;
+            _httpClientPoliciesSettings = httpClientPoliciesSettings;
             _serializationSettings = new JsonSerializerSettings
             {
                 Formatting = Formatting.Indented,
@@ -62,7 +64,8 @@ namespace CrossCutting.DopplerSapService
             try
             {
                 _logger.LogInformation("Sending request to Doppler SAP Api.");
-                httpResponse = await _httpClient.SendAsync(httpRequest).ConfigureAwait(false);
+                var client = _httpClientFactory.CreateClient(_httpClientPoliciesSettings.ClientName);
+                httpResponse = await client.SendAsync(httpRequest).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -91,7 +94,8 @@ namespace CrossCutting.DopplerSapService
             try
             {
                 _logger.LogInformation("Sending request to Doppler SAP Api.");
-                httpResponse = await _httpClient.SendAsync(httpRequest).ConfigureAwait(false);
+                var client = _httpClientFactory.CreateClient(_httpClientPoliciesSettings.ClientName);
+                httpResponse = await client.SendAsync(httpRequest).ConfigureAwait(false);
             }
             catch (Exception e)
             {
