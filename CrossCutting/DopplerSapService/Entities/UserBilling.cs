@@ -1,19 +1,23 @@
-﻿using System;
-
-namespace CrossCutting.DopplerSapService.Entities
+﻿namespace CrossCutting.DopplerSapService.Entities
 {
     public class UserBilling
     {
-        public int Id { get; set; }
-        public DateTime Date { get; set; }
-        public int UserId { get; set; }
-        public decimal Amount { get; set; }
-        public string Description { get; set; }
+        public string Id { get; set; }
         public string PlanType { get; set; }
-        public long CreditsAmount { get; set; }
-        public DateTime PaymentDate { get; set; }
-        public decimal Fee { get; set; }
-        public decimal TotalAmount { get; set; }
-
+        public string CreditsOrSubscribersQuantity { get; set; }
+        public string IsCustomPlan { get; set; }
+        public string IsPlanUpgrade { get; set; }
+        public string Currency { get; set; }
+        public string Periodicity { get; set; }
+        public string PeriodMonth { get; set; }
+        public string PeriodYear { get; set; }
+        public string PlanFee { get; set; }
+        public string Discount { get; set; }
+        public string ExtraEmails { get; set; }
+        public decimal? ExtraEmailsFeePerUnit { get; set; }
+        public string ExtraEmailsPeriodMonth { get; set; }
+        public string ExtraEmailsPeriodYear { get; set; }
+        public string ExtraEmailsFee { get; set; }
+        public string PurchaseOrder { get; set; }
     }
 }

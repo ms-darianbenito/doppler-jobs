@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="Integration\DopplerSapJobTests.cs" />
+    <None Include="Integration\DopplerBillingJobTests.cs" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using CrossCutting.DopplerSapService;
 using CrossCutting.DopplerSapService.Entities;
 using Doppler.Billing.Job;
@@ -10,14 +9,14 @@ using Xunit;
 
 namespace Doppler.Jobs.Test.Integration
 {
-    public class DopplerSapJobTests
+    public class DopplerBillingJobTests
     {
         
         private readonly Mock<ILogger<DopplerBillingJob>> _loggerMock;
         private readonly Mock<IDopplerSapService> _dopplerSapServiceMock;
         private readonly Mock<IDopplerRepository> _dopplerRepositoryMock;
 
-        public DopplerSapJobTests()
+        public DopplerBillingJobTests()
         {
             _loggerMock = new Mock<ILogger<DopplerBillingJob>>();
             _dopplerSapServiceMock = new Mock<IDopplerSapService>();
@@ -37,8 +36,6 @@ namespace Doppler.Jobs.Test.Integration
 
             job.Run();
 
-            //_loggerMock.VerifyLogger(LogLevel.Information, "Getting currency per each code enabled.", Times.Once());
-            //_loggerMock.VerifyLogger(LogLevel.Information, "Sending currency data to Doppler SAP system.", Times.Once());
             _loggerMock.VerifyLogger(LogLevel.Information, "Getting data from Doppler database.", Times.Once());
         }
 
@@ -48,19 +45,8 @@ namespace Doppler.Jobs.Test.Integration
             _dopplerRepositoryMock.Setup(x => x.GetUserBillingInformation())
                 .ReturnsAsync(new List<UserBilling>
                 {
-                    new UserBilling
-                {
-                        Date = DateTime.UtcNow,
-                        Amount = 133.212M,
-                        CreditsAmount = 1000000,
-                        Fee = 0.4M,
-                        Description = "Servicio de Email Marketing.",
-                        PlanType = "Plan Mensual.",
-                        Id = 1,
-                        PaymentDate = DateTime.UtcNow.AddMonths(1),
-                        TotalAmount = 234.455M,
-                        UserId = 10002
-                }});
+                    new UserBilling()
+                });
 
             var job = new DopplerBillingJob(
                 _loggerMock.Object,
