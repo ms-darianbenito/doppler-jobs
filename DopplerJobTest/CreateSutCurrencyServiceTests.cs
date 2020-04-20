@@ -24,7 +24,7 @@ namespace Doppler.Jobs.Test
                 loggerCurrencyService ?? Mock.Of<ILogger<DopplerCurrencyService>>(),
                 timeZoneJobConfigurations ?? new TimeZoneJobConfigurations
                 {
-                    TimeZoneJobs = "Argentina Standard Time"
+                    TimeZoneJobs = TimeZoneHelper.GetTimeZoneByOperativeSystem("Argentina Standard Time") 
                 });
         }
     }
