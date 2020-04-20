@@ -56,7 +56,27 @@ namespace Doppler.Jobs.Test.Integration
             job.Run();
 
             _loggerMock.VerifyLogger(LogLevel.Information, "Getting data from Doppler database.", Times.Once());
-            _loggerMock.VerifyLogger(LogLevel.Information, "Sending Billing data to Doppler SAP system 1.", Times.Once());
+            _loggerMock.VerifyLogger(LogLevel.Information, "Sending Billing data to Doppler SAP with 1 user billing.", Times.Once());
+        }
+
+        [Fact]
+        public void DopplerBillingJob_ShouldBeSendDataToSap_WhenStoredProceduresAreRunCorrectly()
+        {
+            _dopplerRepositoryMock.Setup(x => x.GetUserBillingInformation())
+                .ReturnsAsync(new List<UserBilling>
+                {
+                    new UserBilling(),
+                    new UserBilling()
+                });
+
+            var job = new DopplerBillingJob(
+                _loggerMock.Object,
+                _dopplerSapServiceMock.Object,
+                _dopplerRepositoryMock.Object);
+
+            job.Run();
+
+            _loggerMock.VerifyLogger(LogLevel.Information, "Sending Billing data to Doppler SAP with 2 user billing.", Times.Once());
         }
     }
 }
