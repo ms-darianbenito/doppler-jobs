@@ -63,14 +63,6 @@ namespace Doppler.Jobs.Server
             Configuration.GetSection(nameof(DopplerCurrencyServiceSettings)).Bind(dopplerCurrencySettings);
             services.AddSingleton(dopplerCurrencySettings);
 
-            var dopplerBillingJobSettings = new DopplerBillingJobSettings
-            {
-                StoredProcedureNames = Configuration.GetSection("Jobs:DopplerBillingJobSettings:StoredProcedures")
-                    .Get<List<string>>()
-            };
-            Configuration.GetSection(nameof(DopplerBillingJobSettings)).Bind(dopplerBillingJobSettings);
-            services.AddSingleton(dopplerBillingJobSettings);
-
             var jobsConfig = new TimeZoneJobConfigurations
             {
                 TimeZoneJobs = TimeZoneHelper.GetTimeZoneByOperativeSystem(Configuration["TimeZoneJobs"])
@@ -81,6 +73,8 @@ namespace Doppler.Jobs.Server
             services.Configure<DopplerSapServiceSettings>(Configuration.GetSection(nameof(DopplerSapServiceSettings)));
             services.AddTransient<IDopplerSapService, DopplerSapService>();
 
+            services.AddTransient<IDbConnectionFactory, DbConnectionFactory>();
+            services.Configure<DopplerBillingJobSettings>(Configuration.GetSection("Jobs:DopplerBillingJobSettings"));
             services.AddTransient<IDopplerRepository, DopplerRepository>();
 
             ConfigureJobsScheduler();
