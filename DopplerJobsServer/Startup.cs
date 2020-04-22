@@ -1,10 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Runtime.InteropServices;
-using System.Security.Authentication;
 using CrossCutting;
 using CrossCutting.DopplerSapService;
 using CrossCutting.DopplerSapService.Settings;
@@ -23,7 +16,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Polly;
 using Polly.Extensions.Http;
-using TimeZoneConverter;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Security.Authentication;
 
 namespace Doppler.Jobs.Server
 {
@@ -67,18 +65,16 @@ namespace Doppler.Jobs.Server
 
             var jobsConfig = new TimeZoneJobConfigurations
             {
-                TimeZoneJobs = GetTimeZoneByOperativeSystem()
+                TimeZoneJobs = TimeZoneHelper.GetTimeZoneByOperativeSystem(Configuration["TimeZoneJobs"])
             };
             services.AddSingleton(jobsConfig);
-
             services.AddTransient<IDopplerCurrencyService, DopplerCurrencyService>();
 
             services.Configure<DopplerSapServiceSettings>(Configuration.GetSection(nameof(DopplerSapServiceSettings)));
-
             services.AddTransient<IDopplerSapService, DopplerSapService>();
 
-            services.Configure<DopplerRepositorySettings>(Configuration.GetSection(nameof(DopplerRepositorySettings)));
-
+            services.AddTransient<IDbConnectionFactory, DbConnectionFactory>();
+            services.Configure<DopplerBillingJobSettings>(Configuration.GetSection("Jobs:DopplerBillingJobSettings"));
             services.AddTransient<IDopplerRepository, DopplerRepository>();
 
             ConfigureJobsScheduler();
@@ -121,12 +117,13 @@ namespace Doppler.Jobs.Server
         private void ConfigureJobsScheduler()
         {
             JobStorage.Current = new SQLiteStorage("Hangfire.db");
-            var tz = GetTimeZoneByOperativeSystem();
+            
+            var tz = TimeZoneHelper.GetTimeZoneByOperativeSystem(Configuration["TimeZoneJobs"]);
 
             RecurringJob.AddOrUpdate<DopplerBillingJob>(
-                Configuration["Jobs:DopplerBillingJob:Identifier"],
+                Configuration["Jobs:DopplerBillingJobSettings:Identifier"],
                 job => job.Run(),
-                Configuration["Jobs:DopplerBillingJob:IntervalCronExpression"],
+                Configuration["Jobs:DopplerBillingJobSettings:IntervalCronExpression"],
                 TimeZoneInfo.FindSystemTimeZoneById(tz));
 
             RecurringJob.AddOrUpdate<DopplerCurrencyJob>(
@@ -134,12 +131,6 @@ namespace Doppler.Jobs.Server
                 job => job.Run(),
                 Configuration["Jobs:DopplerCurrencyJob:IntervalCronExpression"],
                 TimeZoneInfo.FindSystemTimeZoneById(tz));
-        }
-
-        private string GetTimeZoneByOperativeSystem()
-        {
-            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? Configuration["TimeZoneJobs"]
-                : TZConvert.WindowsToIana(Configuration["TimeZoneJobs"]);
         }
     }
 }
