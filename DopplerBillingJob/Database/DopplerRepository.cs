@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using CrossCutting.DopplerSapService.Entities;
 using Dapper;
 using Doppler.Billing.Job.Settings;
+using Doppler.Database;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 

@@ -21,6 +21,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Authentication;
+using Doppler.Database;
 
 namespace Doppler.Jobs.Server
 {
@@ -86,7 +87,7 @@ namespace Doppler.Jobs.Server
             });
             app.UseHangfireServer(new BackgroundJobServerOptions
             {
-                WorkerCount = 1
+                WorkerCount = 5
             });
         }
 
