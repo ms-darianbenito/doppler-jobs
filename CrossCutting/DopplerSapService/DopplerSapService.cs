@@ -48,7 +48,7 @@ namespace CrossCutting.DopplerSapService
 
         public async Task<HttpResponseMessage> SendCurrency(IList<CurrencyResponse> currencyList)
         {
-            var uri = _dopplerSapServiceSettings.Url;
+            var uri = _dopplerSapServiceSettings.CurrencyEndpoint;
             _logger.LogInformation("Building http request with url {uri}.", uri);
 
             var httpRequest = new HttpRequestMessage
@@ -78,7 +78,7 @@ namespace CrossCutting.DopplerSapService
 
         public async Task<HttpResponseMessage> SendUserBillings(IList<UserBilling> userBillingList)
         {
-            var uri = _dopplerSapServiceSettings.Url;
+            var uri = _dopplerSapServiceSettings.BillingEndpoint;
             _logger.LogInformation("Building http request with url {uri}.", uri);
 
             var httpRequest = new HttpRequestMessage

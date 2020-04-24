@@ -35,8 +35,7 @@ namespace Doppler.Currency.Job
                 return "Non-existent Currency for this date, please check if it's a holiday.";
 
             _logger.LogInformation("Sending currency data to Doppler SAP system.");
-            
-            //TODO: Create a new Endpoint in Doppler Sap Api and add await _dopplerSapService.SendCurrency(currencyDto);
+            await _dopplerSapService.SendCurrency(currencyDto);
 
             return currencyDto;
         }

@@ -45,8 +45,8 @@ namespace Doppler.Jobs.Test
                 .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(@"{'entity':{'date':'2020-03-18','saleValue':65.0000,
-                       'buyValue':'20.30','currencyName':'Peso Argentino', 'currencyCode':'ARS'},'success':true,'errors':{}}")
+                    Content = new StringContent(@"{'date':'2020-03-18','saleValue':65.0000,
+                       'buyValue':'20.30','currencyName':'Peso Argentino', 'currencyCode':'ARS'}")
                 });
 
             _httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>()))
@@ -65,7 +65,7 @@ namespace Doppler.Jobs.Test
 
             Assert.NotEmpty(result);
 
-            var currency = result[0].Entity;
+            var currency = result[0];
             Assert.Equal("2020-03-18", currency.Date);
             Assert.Equal(65.0000M, currency.SaleValue);
             Assert.Equal(20.30M, currency.BuyValue);
