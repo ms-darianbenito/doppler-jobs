@@ -1,6 +1,6 @@
 ﻿using System.Data.Common;
 
-namespace Doppler.Billing.Job.Database
+namespace Doppler.Database
 {
     public interface IDbConnectionFactory
     {
