@@ -3,7 +3,7 @@ using System.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace Doppler.Billing.Job.Database
+namespace Doppler.Database
 {
     public class DbConnectionFactory: IDbConnectionFactory
     {

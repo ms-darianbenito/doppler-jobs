@@ -1,6 +1,7 @@
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS restore
 WORKDIR /src
 COPY Doppler.Jobs.sln ./
+COPY ["Doppler.Database/Doppler.Database.csproj", "Doppler.Database/"]
 COPY ["DopplerJobsServer/Doppler.Jobs.Server.csproj", "DopplerJobsServer/"]
 COPY ["CrossCutting/CrossCutting.csproj", "CrossCutting/"]
 COPY ["DopplerCurrencyJob/Doppler.Currency.Job.csproj", "DopplerCurrencyJob/"]
