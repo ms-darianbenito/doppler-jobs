@@ -24,7 +24,7 @@ namespace Doppler.Billing.Job
             _dopplerRepository = dopplerRepository;
         }
 
-        [AutomaticRetry(Attempts = 0)]
+        [AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Delete, Attempts = 0)]
         public object Run() => RunAsync().GetAwaiter().GetResult();
 
         private async Task<object> RunAsync()
