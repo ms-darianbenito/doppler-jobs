@@ -28,7 +28,8 @@ namespace Doppler.Jobs.Test
             _dopplerSapServiceSettingsMock.Setup(x => x.CurrentValue)
                 .Returns(new DopplerSapConfiguration
                 {
-                    Url = "https://localhost:5001/SetCurrencyRate"
+                    CurrencyEndpoint = "https://localhost:65100/Billing/SetCurrencyRate",
+                    BillingEndpoint = "https://localhost:65100/Billing/CreateBillingRequest"
                 });
 
             _httpClientFactoryMock = new Mock<IHttpClientFactory>();

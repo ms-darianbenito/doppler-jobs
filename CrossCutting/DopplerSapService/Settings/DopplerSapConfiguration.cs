@@ -2,6 +2,7 @@
 {
     public class DopplerSapConfiguration
     {
-        public string Url { get; set; }
+        public string CurrencyEndpoint { get; set; }
+        public string BillingEndpoint { get; set; }
     }
 }

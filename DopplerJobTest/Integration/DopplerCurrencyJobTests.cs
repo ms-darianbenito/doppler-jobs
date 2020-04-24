@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
 using CrossCutting.DopplerSapService;
 using CrossCutting.DopplerSapService.Entities;
 using Doppler.Currency.Job;

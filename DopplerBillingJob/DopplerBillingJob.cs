@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 using CrossCutting.DopplerSapService;
 using Doppler.Billing.Job.Database;
 using Hangfire;
@@ -31,8 +32,12 @@ namespace Doppler.Billing.Job
             _logger.LogInformation("Getting data from Doppler database.");
             var billingData = await _dopplerRepository.GetUserBillingInformation();
 
-            _logger.LogInformation("Sending Billing data to Doppler SAP with {billingData} user billing.", billingData.Count);
-            //TODO: Create a service to send data to SAP system with billingData variable
+            if (billingData.Any())
+            {
+                _logger.LogInformation("Sending Billing data to Doppler SAP with {billingData} user billing.",
+                    billingData.Count);
+                await _dopplerSapService.SendUserBillings(billingData);
+            }
 
             return billingData;
         }
