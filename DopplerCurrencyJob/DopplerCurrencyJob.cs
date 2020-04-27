@@ -23,7 +23,7 @@ namespace Doppler.Currency.Job
             _dopplerSapService = dopplerSapService;
         }
 
-        [AutomaticRetry(Attempts = 0)]
+        [AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Delete, Attempts = 0)]
         public object Run() => RunAsync().GetAwaiter().GetResult();
 
         private async Task<object> RunAsync()
