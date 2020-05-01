@@ -64,7 +64,7 @@ namespace CrossCutting.DopplerSapService
             try
             {
                 _logger.LogInformation("Sending request to Doppler SAP Api.");
-                var client = _httpClientFactory.CreateClient(_httpClientPoliciesSettings.ClientName);
+                var client = _httpClientFactory.CreateClient();
                 httpResponse = await client.SendAsync(httpRequest).ConfigureAwait(false);
             }
             catch (Exception e)
