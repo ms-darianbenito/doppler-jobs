@@ -2,6 +2,7 @@
 using CrossCutting;
 using Doppler.Currency.Job.DopplerCurrencyService;
 using Doppler.Currency.Job.Settings;
+using Doppler.Database;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -15,7 +16,8 @@ namespace Doppler.Jobs.Test
             HttpClientPoliciesSettings httpClientPoliciesSettings = null,
             IOptionsMonitor<DopplerCurrencyServiceSettings> dopplerCurrencySettings = null,
             ILogger<DopplerCurrencyService> loggerCurrencyService = null,
-            TimeZoneJobConfigurations timeZoneJobConfigurations = null)
+            TimeZoneJobConfigurations timeZoneJobConfigurations = null,
+            IDbConnectionFactory dbConnectionFactory = null)
         {
 
             return new DopplerCurrencyService(
@@ -23,10 +25,12 @@ namespace Doppler.Jobs.Test
                 httpClientPoliciesSettings,
                 dopplerCurrencySettings,
                 loggerCurrencyService ?? Mock.Of<ILogger<DopplerCurrencyService>>(),
+                
                 timeZoneJobConfigurations ?? new TimeZoneJobConfigurations
                 {
-                    TimeZoneJobs = TimeZoneHelper.GetTimeZoneByOperativeSystem("Argentina Standard Time") 
-                });
+                    TimeZoneJobs = TimeZoneHelper.GetTimeZoneByOperativeSystem("Argentina Standard Time")
+                },
+                dbConnectionFactory);;
         }
     }
 }

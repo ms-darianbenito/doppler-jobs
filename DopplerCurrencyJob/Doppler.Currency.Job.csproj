@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CrossCutting\CrossCutting.csproj" />
+    <ProjectReference Include="..\Doppler.Database\Doppler.Database.csproj" />
   </ItemGroup>
 
 </Project>

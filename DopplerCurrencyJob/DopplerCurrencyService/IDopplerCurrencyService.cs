@@ -7,5 +7,7 @@ namespace Doppler.Currency.Job.DopplerCurrencyService
     public interface IDopplerCurrencyService
     {
         public Task<IList<CurrencyResponse>> GetCurrencyByCode();
+
+        public Task InsertCurrencyIntoDataBase(IList<CurrencyResponse> currencyList);
     }
 }
