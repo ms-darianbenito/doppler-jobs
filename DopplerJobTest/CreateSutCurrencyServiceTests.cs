@@ -30,7 +30,7 @@ namespace Doppler.Jobs.Test
                 {
                     TimeZoneJobs = TimeZoneHelper.GetTimeZoneByOperativeSystem("Argentina Standard Time")
                 },
-                dbConnectionFactory);;
+                dbConnectionFactory);
         }
     }
 }

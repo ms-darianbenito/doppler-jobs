@@ -1,6 +1,4 @@
-﻿using Newtonsoft.Json;
-
-namespace CrossCutting.DopplerSapService.Entities
+﻿namespace CrossCutting.DopplerSapService.Entities
 {
     public class DopplerCurrencyRate
     {

@@ -87,7 +87,7 @@ namespace Doppler.Currency.Job.DopplerCurrencyService
             {
                 var parameters = new  List<DopplerCurrencyRate>();
 
-                foreach (CurrencyResponse currency in currencyList)
+                foreach (var currency in currencyList)
                 {
                     var param = new DopplerCurrencyRate();
 
@@ -113,7 +113,7 @@ namespace Doppler.Currency.Job.DopplerCurrencyService
                 await using var conn = _dbConnectionFactory.GetConnection();
 
                 _logger.LogInformation("Sending SQL sentence to database server.");
-                var result = await conn.ExecuteAsync(storedProcedure,
+                await conn.ExecuteAsync(storedProcedure,
                     parameters.ToArray(),
                     commandType: System.Data.CommandType.StoredProcedure);
 
