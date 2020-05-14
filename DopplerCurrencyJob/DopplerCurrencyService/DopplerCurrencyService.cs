@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using CrossCutting;
 using CrossCutting.DopplerSapService.Entities;
 using Dapper;
+using Doppler.Currency.Job.Enums;
 using Doppler.Currency.Job.Settings;
 using Doppler.Database;
 using Microsoft.Extensions.Logging;
@@ -89,21 +90,12 @@ namespace Doppler.Currency.Job.DopplerCurrencyService
 
                 foreach (var currency in currencyList)
                 {
-                    var param = new DopplerCurrencyRate();
-
-                    switch (currency.CurrencyCode)
+                    var param = new DopplerCurrencyRate
                     {
-                        case "ARS":
-                            param.IdCurrencyTypeFrom = 0;
-                            param.IdCurrencyTypeTo = 1;
-                            param.Rate = currency.SaleValue;
-                            break;
-                        case "MXN":
-                            param.IdCurrencyTypeFrom = 0;
-                            param.IdCurrencyTypeTo = 3;
-                            param.Rate = currency.SaleValue;
-                            break;
-                    }
+                        IdCurrencyTypeFrom = (int)CurrencyTypeEnum.USD,
+                        IdCurrencyTypeTo = (int)Enum.Parse(typeof(CurrencyTypeEnum), currency.CurrencyCode),
+                        Rate = currency.SaleValue
+                    };
 
                     parameters.Add(param);
                 }
