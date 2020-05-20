@@ -6,5 +6,6 @@ namespace Doppler.Currency.Job.Settings
     {
         public string Url { get; set; }
         public List<string> CurrencyCodeList { get; set; }
+        public string InsertCurrencyQuery { get; set; }
     }
 }
