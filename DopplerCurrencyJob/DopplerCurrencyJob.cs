@@ -32,7 +32,7 @@ namespace Doppler.Currency.Job
             var currencyDto = await _dopplerCurrencyService.GetCurrencyByCode();
 
             if (!currencyDto.Any())
-                return "Non-existent Currency for this date, please check if it's a holiday.";
+                return "Non-existent currencies for this date, please check for errors";
 
             _logger.LogInformation("Sending currency data to Doppler SAP system.");
             await _dopplerSapService.SendCurrency(currencyDto);
