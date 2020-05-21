@@ -125,7 +125,7 @@ namespace Doppler.Jobs.Test
 
             var exception = await Assert.ThrowsAnyAsync<Exception>(() => service.GetCurrencyByCode());
 
-            loggerMock.VerifyLogger(LogLevel.Error, "Error GetCurrency for ARS.", Times.Once());
+            loggerMock.VerifyLogger(LogLevel.Error, "Unexpected error getting currency for ARS.", Times.Once());
             Assert.Equal("Invalid URI: The format of the URI could not be determined.", exception.Message);
         }
 
@@ -158,6 +158,35 @@ namespace Doppler.Jobs.Test
             var exception = await Assert.ThrowsAnyAsync<Exception>(() => service.GetCurrencyByCode());
 
             Assert.Equal("Error parsing boolean value. Path '', line 1, position 1.", exception.Message);
+        }
+
+        [Fact]
+        public async Task DopplerCurrencyService_ShouldBeEmptyList_WhenDateIsHolidayAndStatusCodeIsBadRequestAfterFiveRetries()
+        {
+            _httpMessageHandlerMock.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.BadRequest,
+                    Content = new StringContent("{\"success\":false,\"errors\":{\"Holiday Error\":[\"Error getting date is holiday, please check Bna page.\"]}}")
+                });
+
+            _httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>()))
+                .Returns(_httpClient);
+
+            var service = CreateSutCurrencyServiceTests.CreateSut(
+                _httpClientFactoryMock.Object,
+                new HttpClientPoliciesSettings
+                {
+                    ClientName = "test"
+                },
+                _dopplerCurrencyServiceSettingsMock.Object
+            );
+
+            var result = await service.GetCurrencyByCode();
+
+            Assert.Empty(result);
         }
     }
 }
