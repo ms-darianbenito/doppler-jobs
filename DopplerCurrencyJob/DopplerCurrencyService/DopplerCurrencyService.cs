@@ -53,11 +53,11 @@ namespace Doppler.Currency.Job.DopplerCurrencyService
 
                     var httpResponse = await GetCurrencyValue(currencyCode, cstTime);
                     var jsonResult = await httpResponse.Content.ReadAsStringAsync();
-                    var isHoliday = jsonResult.Contains("Holiday Error") || jsonResult.Contains("Html Error Mxn currency");
+                    var isHoliday = jsonResult.Contains("No USD for this date") || jsonResult.Contains("Html Error Mxn currency");
 
                     if (!isHoliday && !httpResponse.IsSuccessStatusCode )
                     {
-                        _logger.LogError(httpResponse.ReasonPhrase,"Error getting currency for {currencyCode}.", currencyCode);
+                        _logger.LogError("{ReasonPhrase}. Error getting currency for {currencyCode}.", httpResponse.ReasonPhrase, currencyCode);
                         continue;
                     }
                     else if (isHoliday)
@@ -74,7 +74,7 @@ namespace Doppler.Currency.Job.DopplerCurrencyService
 
                     if (!httpResponse.IsSuccessStatusCode)
                     {
-                        _logger.LogError(httpResponse.ReasonPhrase,"Error getting currency for {currencyCode} after trying for the last 5 business days", currencyCode);
+                        _logger.LogError("{ReasonPhrase}. Error getting currency for {currencyCode} after trying for the last 5 business days", httpResponse.ReasonPhrase, currencyCode);
                         continue;
                     }
 
