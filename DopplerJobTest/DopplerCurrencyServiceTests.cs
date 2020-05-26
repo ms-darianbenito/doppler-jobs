@@ -169,7 +169,7 @@ namespace Doppler.Jobs.Test
                 .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.BadRequest,
-                    Content = new StringContent("{\"success\":false,\"errors\":{\"Holiday Error\":[\"Error getting date is holiday, please check Bna page.\"]}}")
+                    Content = new StringContent("{\"success\":false,\"errors\":{\"No USD for this date\":[\"There are no pending USD currency for that date.\"]}}")
                 });
 
             _httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>()))
