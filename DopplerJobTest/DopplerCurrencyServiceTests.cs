@@ -32,7 +32,8 @@ namespace Doppler.Jobs.Test
                 .Returns(new DopplerCurrencyServiceSettings
                 {
                     Url = "https://localhost:5001/Currency/",
-                    CurrencyCodeList = new List<string> {"ARS"}
+                    CurrencyCodeList = new List<string> {"ARS"},
+                    HolidayRetryCountLimit = 5
                 });
         }
 
@@ -182,11 +183,67 @@ namespace Doppler.Jobs.Test
                     ClientName = "test"
                 },
                 _dopplerCurrencyServiceSettingsMock.Object
-            );
+            ); 
 
             var result = await service.GetCurrencyByCode();
 
             Assert.Empty(result);
+            _httpMessageHandlerMock.Protected().Verify<Task<HttpResponseMessage>>("SendAsync", Times.Exactly(6), ItExpr.IsAny<HttpRequestMessage>(),
+                    ItExpr.IsAny<CancellationToken>());
+        }
+
+        [Fact]
+        public async Task DopplerCurrencyService__ShouldBeHttpStatusCodeOk_WhenDateIsHolidayAndStatusCodeIsOkAfterRetry()
+        {
+            var failedUrlSegment = String.Format("{0}-{1}-{2}", DateTime.UtcNow.Year, DateTime.UtcNow.Month, DateTime.UtcNow.Day);
+
+            var previousDay = DateTime.UtcNow.DayOfWeek == DayOfWeek.Monday ? DateTime.UtcNow.AddDays(-3) : DateTime.UtcNow.AddDays(-1);
+            var SuccessfulUrlSegment = String.Format("{0}-{1}-{2}", previousDay.Year, previousDay.Month, previousDay.Day) ;
+
+            _httpMessageHandlerMock.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(x => x.RequestUri.AbsolutePath.EndsWith(failedUrlSegment)),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.BadRequest,
+                    Content = new StringContent("{\"success\":false,\"errors\":{\"No USD for this date\":[\"There are no pending USD currency for that date.\"]}}")
+                });
+
+            _httpMessageHandlerMock.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.Is<HttpRequestMessage>(x => x.RequestUri.AbsolutePath.EndsWith(SuccessfulUrlSegment)),
+                    ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(@"{'date':'2020-03-18','saleValue':65.0000,
+                       'buyValue':'20.30','currencyName':'Peso Argentino', 'currencyCode':'ARS'}")
+                });
+
+            _httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>()))
+                .Returns(_httpClient);
+
+            var service = CreateSutCurrencyServiceTests.CreateSut(
+                _httpClientFactoryMock.Object,
+                new HttpClientPoliciesSettings
+                {
+                    ClientName = "test",
+                },
+                _dopplerCurrencyServiceSettingsMock.Object
+            );
+
+            var result = await service.GetCurrencyByCode();
+
+            Assert.NotEmpty(result);
+
+            var currency = result[0];
+            Assert.Equal("2020-03-18", currency.Date);
+            Assert.Equal(65.0000M, currency.SaleValue);
+            Assert.Equal(20.30M, currency.BuyValue);
+            Assert.Equal("Peso Argentino", currency.CurrencyName);
+            Assert.Equal("ARS", currency.CurrencyCode);
+
+            _httpMessageHandlerMock.Protected().Verify<Task<HttpResponseMessage>>("SendAsync", Times.Exactly(2), ItExpr.IsAny<HttpRequestMessage>(),
+                    ItExpr.IsAny<CancellationToken>());
         }
     }
 }

@@ -67,7 +67,10 @@ namespace Doppler.Currency.Job.DopplerCurrencyService
                             cstTime = DateTime.UtcNow.DayOfWeek == DayOfWeek.Monday ? cstTime.AddDays(-3) : cstTime.AddDays(-1);
                             httpResponse = await GetCurrencyValue(currencyCode, cstTime);
                             if (httpResponse.IsSuccessStatusCode)
+                            {
+                                jsonResult = await httpResponse.Content.ReadAsStringAsync();
                                 break;
+                            }  
                             retryCount += 1;
                         }
                     }
