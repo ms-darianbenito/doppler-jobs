@@ -42,38 +42,52 @@ namespace Doppler.Currency.Job.DopplerCurrencyService
         public async Task<IList<CurrencyResponse>> GetCurrencyByCode()
         {
             var cstZone = TimeZoneInfo.FindSystemTimeZoneById(_jobConfig.TimeZoneJobs);
-            var cstTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, cstZone);
-            
             var returnList = new List<CurrencyResponse>();
             
             foreach (var currencyCode in _dopplerCurrencySettings.CurrencyCodeList)
             {
-                try { 
-                    var uri = new Uri(_dopplerCurrencySettings.Url + $"{currencyCode}/{cstTime.Year}-{cstTime.Month}-{cstTime.Day}");
-                    
-                    _logger.LogInformation("Building http request with url {uri}", uri); 
-                    var httpRequest = new HttpRequestMessage 
-                    {
-                        RequestUri = uri, 
-                        Method = new HttpMethod("GET")
+                try
+                {
+                    var cstTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, cstZone);
+                    var retryCount = 0;
 
-                    };
-                    
-                    _logger.LogInformation("Sending request to Doppler Currency Api.");
-                    var client = _httpClientFactory.CreateClient(_httpClientPoliciesSettings.ClientName);
-                    var httpResponse = await client.SendAsync(httpRequest).ConfigureAwait(false);
+                    var httpResponse = await GetCurrencyValue(currencyCode, cstTime);
+                    var jsonResult = await httpResponse.Content.ReadAsStringAsync();
+                    var isHoliday = jsonResult.Contains("No USD for this date") || jsonResult.Contains("Html Error Mxn currency");
+
+                    if (!isHoliday && !httpResponse.IsSuccessStatusCode )
+                    {
+                        _logger.LogError("{ReasonPhrase}. Error getting currency for {currencyCode}.", httpResponse.ReasonPhrase, currencyCode);
+                        continue;
+                    }
+                    else if (isHoliday)
+                    {
+                        while (retryCount < _dopplerCurrencySettings.HolidayRetryCountLimit)
+                        {
+                            cstTime = DateTime.UtcNow.DayOfWeek == DayOfWeek.Monday ? cstTime.AddDays(-3) : cstTime.AddDays(-1);
+                            httpResponse = await GetCurrencyValue(currencyCode, cstTime);
+                            if (httpResponse.IsSuccessStatusCode)
+                            {
+                                jsonResult = await httpResponse.Content.ReadAsStringAsync();
+                                break;
+                            }  
+                            retryCount += 1;
+                        }
+                    }
 
                     if (!httpResponse.IsSuccessStatusCode)
+                    {
+                        _logger.LogError("{ReasonPhrase}. Error getting currency for {currencyCode} after trying for the last 5 business days", httpResponse.ReasonPhrase, currencyCode);
                         continue;
+                    }
 
-                    var json = await httpResponse.Content.ReadAsStringAsync();
-                    var result = JsonConvert.DeserializeObject<CurrencyResponse>(json);
+                    var result = JsonConvert.DeserializeObject<CurrencyResponse>(jsonResult);
 
                     returnList.Add(result);
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e,"Error GetCurrency for {currencyCode}.", currencyCode);
+                    _logger.LogError(e,"Unexpected error getting currency for {currencyCode}.", currencyCode);
                     throw;
                 }
             }
@@ -115,6 +129,23 @@ namespace Doppler.Currency.Job.DopplerCurrencyService
                 _logger.LogCritical(e, "Error sending SQL sentence to database server.");
                 throw;
             }
+        }
+
+        private async Task<HttpResponseMessage> GetCurrencyValue(string currencyCode , DateTime cstTime )
+        {
+            var uri = new Uri(_dopplerCurrencySettings.Url + $"{currencyCode}/{cstTime.Year}-{cstTime.Month}-{cstTime.Day}");
+
+            _logger.LogInformation("Building http request with url {uri}", uri);
+            var httpRequest = new HttpRequestMessage
+            {
+                RequestUri = uri,
+                Method = new HttpMethod("GET")
+
+            };
+
+            _logger.LogInformation("Sending request to Doppler Currency Api.");
+            var client = _httpClientFactory.CreateClient();
+            return await client.SendAsync(httpRequest).ConfigureAwait(false);
         }
     }
 }
