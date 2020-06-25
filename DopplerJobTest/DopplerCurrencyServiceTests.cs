@@ -55,10 +55,6 @@ namespace Doppler.Jobs.Test
 
             var service = CreateSutCurrencyServiceTests.CreateSut(
                 _httpClientFactoryMock.Object,
-                new HttpClientPoliciesSettings
-                {
-                    ClientName = "test"
-                },
                 _dopplerCurrencyServiceSettingsMock.Object
             );
 
@@ -91,10 +87,6 @@ namespace Doppler.Jobs.Test
 
             var service = CreateSutCurrencyServiceTests.CreateSut(
                 _httpClientFactoryMock.Object,
-                new HttpClientPoliciesSettings
-                {
-                    ClientName = "test"
-                },
                 _dopplerCurrencyServiceSettingsMock.Object
             );
 
@@ -116,10 +108,6 @@ namespace Doppler.Jobs.Test
 
             var service = CreateSutCurrencyServiceTests.CreateSut(
                 _httpClientFactoryMock.Object,
-                new HttpClientPoliciesSettings
-                {
-                    ClientName = "test"
-                },
                 _dopplerCurrencyServiceSettingsMock.Object,
                 loggerMock.Object
             );
@@ -148,10 +136,6 @@ namespace Doppler.Jobs.Test
 
             var service = CreateSutCurrencyServiceTests.CreateSut(
                 _httpClientFactoryMock.Object,
-                new HttpClientPoliciesSettings
-                {
-                    ClientName = "test"
-                },
                 _dopplerCurrencyServiceSettingsMock.Object,
                 loggerMock.Object
             );
@@ -178,10 +162,6 @@ namespace Doppler.Jobs.Test
 
             var service = CreateSutCurrencyServiceTests.CreateSut(
                 _httpClientFactoryMock.Object,
-                new HttpClientPoliciesSettings
-                {
-                    ClientName = "test"
-                },
                 _dopplerCurrencyServiceSettingsMock.Object
             ); 
 
@@ -224,10 +204,6 @@ namespace Doppler.Jobs.Test
 
             var service = CreateSutCurrencyServiceTests.CreateSut(
                 _httpClientFactoryMock.Object,
-                new HttpClientPoliciesSettings
-                {
-                    ClientName = "test",
-                },
                 _dopplerCurrencyServiceSettingsMock.Object
             );
 
