@@ -28,10 +28,23 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="public-keys\" />
     <Folder Include="Resources\Jwt\" />
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="public-keys\doppler_prod.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="public-keys\doppler_test.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="public-keys\relay_prod.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="public-keys\relay_test.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\Jwt\key.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
