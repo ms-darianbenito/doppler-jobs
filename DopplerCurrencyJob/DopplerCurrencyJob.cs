@@ -40,10 +40,10 @@ namespace Doppler.Currency.Job
             }
 
             _logger.LogInformation("Sending currency data to Doppler SAP system.");
-            await _dopplerSapService.SendCurrency(currencyDto);
+            //await _dopplerSapService.SendCurrency(currencyDto);
 
-            _logger.LogInformation("Insert currency data into Doppler Database.");
-            await _dopplerCurrencyService.InsertCurrencyIntoDataBase(currencyDto);
+            //_logger.LogInformation("Insert currency data into Doppler Database.");
+            //await _dopplerCurrencyService.InsertCurrencyIntoDataBase(currencyDto);
 
             return currencyDto;
         }
