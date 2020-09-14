@@ -91,18 +91,18 @@ namespace Doppler.Jobs.Server
 
             app.UseStaticFiles();
 
-            if (env.IsDevelopment())
-            {
+            //if (env.IsDevelopment())
+            //{
                 app.UseHangfireDashboard("/hangfire", new DashboardOptions
                 {
                     PrefixPath = !env.IsDevelopment() ? "/jobs" : null,
                     Authorization = new[] {new HangfireAuthorizationFilter()}
                 });
-            }
+            //}
 
             app.UseHangfireServer(new BackgroundJobServerOptions
             {
-                WorkerCount = 5
+                WorkerCount = 1
             });
         }
 
