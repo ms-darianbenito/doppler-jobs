@@ -10,5 +10,6 @@ namespace CrossCutting.DopplerSapService.Entities
         public decimal? BuyValue { get; set; }
         public string CurrencyName { get; set; }
         public string CurrencyCode { get; set; }
+        public bool CotizationAvailable { get; set; }
     }
 }
