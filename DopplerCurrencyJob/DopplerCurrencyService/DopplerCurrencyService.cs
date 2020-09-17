@@ -59,41 +59,40 @@ namespace Doppler.Currency.Job.DopplerCurrencyService
                 try
                 {
                     var cstTime = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, cstZone);
-                    var retryCount = 0;
-
-                    var httpResponse = await GetCurrencyValue(currencyCode, cstTime);
+                    var jwtToken = CreateJwtToken();
+                    var httpResponse = await GetCurrencyValue(currencyCode, cstTime, jwtToken);
                     var jsonResult = await httpResponse.Content.ReadAsStringAsync();
-                    var isHoliday = jsonResult.Contains("No USD for this date") || jsonResult.Contains("Html Error Mxn currency");
 
-                    if (!isHoliday && !httpResponse.IsSuccessStatusCode )
+                    if (httpResponse.IsSuccessStatusCode)
+                    {
+                        var result = JsonConvert.DeserializeObject<CurrencyResponse>(jsonResult);
+
+                        if (result.CotizationAvailable)
+                        {
+                            returnList.Add(result);
+                        }
+                        else
+                        {
+                            _logger.LogError("{ReasonPhrase}. Error getting currency for {currencyCode}.", httpResponse.ReasonPhrase, currencyCode);
+
+                            ///Get the most recent previous price
+                            result = await GetPreviousPrices(cstTime, currencyCode);
+
+                            if (result == null)
+                            {
+                                _logger.LogError("{ReasonPhrase}. Error getting currency for {currencyCode} after trying for the last 5 business days", httpResponse.ReasonPhrase, currencyCode);
+                            }
+                            else
+                            {
+                                returnList.Add(result);
+                            }
+                        }
+                    }
+                    else
                     {
                         _logger.LogError("{ReasonPhrase}. Error getting currency for {currencyCode}.", httpResponse.ReasonPhrase, currencyCode);
                         continue;
                     }
-                    else if (isHoliday)
-                    {
-                        while (retryCount < _dopplerCurrencySettings.HolidayRetryCountLimit)
-                        {
-                            cstTime = DateTime.UtcNow.DayOfWeek == DayOfWeek.Monday ? cstTime.AddDays(-3) : cstTime.AddDays(-1);
-                            httpResponse = await GetCurrencyValue(currencyCode, cstTime);
-                            if (httpResponse.IsSuccessStatusCode)
-                            {
-                                jsonResult = await httpResponse.Content.ReadAsStringAsync();
-                                break;
-                            }  
-                            retryCount += 1;
-                        }
-                    }
-
-                    if (!httpResponse.IsSuccessStatusCode)
-                    {
-                        _logger.LogError("{ReasonPhrase}. Error getting currency for {currencyCode} after trying for the last 5 business days", httpResponse.ReasonPhrase, currencyCode);
-                        continue;
-                    }
-
-                    var result = JsonConvert.DeserializeObject<CurrencyResponse>(jsonResult);
-
-                    returnList.Add(result);
                 }
                 catch (Exception e)
                 {
@@ -141,7 +140,7 @@ namespace Doppler.Currency.Job.DopplerCurrencyService
             }
         }
 
-        private async Task<HttpResponseMessage> GetCurrencyValue(string currencyCode , DateTime cstTime )
+        private async Task<HttpResponseMessage> GetCurrencyValue(string currencyCode , DateTime cstTime, string jwtToken)
         {
             var uri = new Uri(_dopplerCurrencySettings.Url + $"{currencyCode}/{cstTime.Year}-{cstTime.Month}-{cstTime.Day}");
 
@@ -155,7 +154,6 @@ namespace Doppler.Currency.Job.DopplerCurrencyService
 
             _logger.LogInformation("Sending request to Doppler Currency Api.");
             var client = _httpClientFactory.CreateClient();
-            var jwtToken = CreateJwtToken();
             client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
 
             return await client.SendAsync(httpRequest).ConfigureAwait(false);
@@ -172,6 +170,34 @@ namespace Doppler.Currency.Job.DopplerCurrencyService
             }) as JwtSecurityToken;
 
             return _tokenHandler.WriteToken(jwtToken);
+        }
+
+        private async Task<CurrencyResponse> GetPreviousPrices(DateTime cstTime, string currencyCode)
+        {
+            var currentDate = cstTime;
+            CurrencyResponse result = null;
+            var jwtToken = CreateJwtToken();
+
+            for (var count = 1;  count <= _dopplerCurrencySettings.HolidayRetryCountLimit; count++)
+            {
+                cstTime = cstTime.DayOfWeek == DayOfWeek.Monday ? cstTime.AddDays(-3) : cstTime.AddDays(-1);
+                var httpResponse = await GetCurrencyValue(currencyCode, cstTime, jwtToken);
+                var jsonResult = await httpResponse.Content.ReadAsStringAsync();
+
+                if (httpResponse.IsSuccessStatusCode)
+                {
+                    var currencyResponse = JsonConvert.DeserializeObject<CurrencyResponse>(jsonResult);
+
+                    if (currencyResponse.CotizationAvailable)
+                    {
+                        result = currencyResponse;
+                        result.Date = $"{currentDate:yyyy-MM-dd}";
+                        break;
+                    }
+                }
+            }
+
+            return result;
         }
     }
 }

@@ -65,7 +65,7 @@ namespace Doppler.Jobs.Test
                 .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(@"{'date':'2020-03-18','saleValue':65.0000,
+                    Content = new StringContent(@"{'cotizationAvailable':true, 'date':'2020-03-18','saleValue':65.0000,
                        'buyValue':'20.30','currencyName':'Peso Argentino', 'currencyCode':'ARS'}")
                 });
 
@@ -170,15 +170,15 @@ namespace Doppler.Jobs.Test
         }
 
         [Fact]
-        public async Task DopplerCurrencyService_ShouldBeEmptyList_WhenDateIsHolidayAndStatusCodeIsBadRequestAfterFiveRetries()
+        public async Task DopplerCurrencyService_ShouldBeEmptyList_WhenDateIsHolidayAndCotizationAvailableIsFalseAfterFiveRetries()
         {
             _httpMessageHandlerMock.Protected()
                 .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(),
                     ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync(new HttpResponseMessage
                 {
-                    StatusCode = HttpStatusCode.BadRequest,
-                    Content = new StringContent("{\"success\":false,\"errors\":{\"No USD for this date\":[\"There are no pending USD currency for that date.\"]}}")
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(@"{'cotizationAvailable':false, 'date':'2020-03-18','currencyName':'Peso Argentino', 'currencyCode':'ARS'}")
                 });
 
             _httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>()))
@@ -198,7 +198,7 @@ namespace Doppler.Jobs.Test
         }
 
         [Fact]
-        public async Task DopplerCurrencyService__ShouldBeHttpStatusCodeOk_WhenDateIsHolidayAndStatusCodeIsOkAfterRetry()
+        public async Task DopplerCurrencyService__ShouldBeHttpStatusCodeOk_WhenDateIsHolidayAndCotizationAvailableIsTrueAfterRetry()
         {
             var failedUrlSegment = $"{DateTime.UtcNow.Year}-{DateTime.UtcNow.Month}-{DateTime.UtcNow.Day}";
 
@@ -210,8 +210,8 @@ namespace Doppler.Jobs.Test
                     ItExpr.IsAny<CancellationToken>())
                 .ReturnsAsync(new HttpResponseMessage
                 {
-                    StatusCode = HttpStatusCode.BadRequest,
-                    Content = new StringContent("{\"success\":false,\"errors\":{\"No USD for this date\":[\"There are no pending USD currency for that date.\"]}}")
+                    StatusCode = HttpStatusCode.OK,
+                    Content = new StringContent(@"{'cotizationAvailable':false, 'date':'" + $"{DateTime.UtcNow:yyyy-MM-dd}" + "','currencyName':'Peso Argentino', 'currencyCode':'ARS'}")
                 });
 
             _httpMessageHandlerMock.Protected()
@@ -220,8 +220,7 @@ namespace Doppler.Jobs.Test
                 .ReturnsAsync(new HttpResponseMessage
                 {
                     StatusCode = HttpStatusCode.OK,
-                    Content = new StringContent(@"{'date':'2020-03-18','saleValue':65.0000,
-                       'buyValue':'20.30','currencyName':'Peso Argentino', 'currencyCode':'ARS'}")
+                    Content = new StringContent(@"{'cotizationAvailable':true, 'date':'" + $"{previousDay:yyyy-MM-dd}" + "', 'saleValue':65.0000, 'buyValue':'20.30','currencyName':'Peso Argentino', 'currencyCode':'ARS'}")
                 });
 
             _httpClientFactoryMock.Setup(_ => _.CreateClient(It.IsAny<string>()))
@@ -238,7 +237,7 @@ namespace Doppler.Jobs.Test
             Assert.NotEmpty(result);
 
             var currency = result[0];
-            Assert.Equal("2020-03-18", currency.Date);
+            Assert.Equal($"{DateTime.UtcNow:yyyy-MM-dd}", currency.Date);
             Assert.Equal(65.0000M, currency.SaleValue);
             Assert.Equal(20.30M, currency.BuyValue);
             Assert.Equal("Peso Argentino", currency.CurrencyName);
