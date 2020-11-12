@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -24,11 +25,16 @@ namespace CrossCutting.Authorization
         public string CreateJwtToken()
         {
             var now = DateTime.UtcNow;
+            var payload = new Dictionary<string, object>
+            {
+                { "isSU", true }
+            };
 
             var jwtToken = _tokenHandler.CreateToken(new SecurityTokenDescriptor
             {
                 Expires = now.AddDays(_jwtOptions.TokenLifeTime),
-                SigningCredentials = _signingCredentials
+                SigningCredentials = _signingCredentials,
+                Claims = payload
             }) as JwtSecurityToken;
 
             return _tokenHandler.WriteToken(jwtToken);
