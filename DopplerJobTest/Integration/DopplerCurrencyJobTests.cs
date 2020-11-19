@@ -1,14 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Http;
-using System.Threading.Tasks;
-using CrossCutting.DopplerSapService;
+﻿using CrossCutting.DopplerSapService;
 using CrossCutting.DopplerSapService.Entities;
 using Doppler.Currency.Job;
 using Doppler.Currency.Job.DopplerCurrencyService;
-using Doppler.Currency.Job.Exceptions;
 using Microsoft.Extensions.Logging;
 using Moq;
+using System.Collections.Generic;
+using System.Net.Http;
 using Xunit;
 
 namespace Doppler.Jobs.Test.Integration
