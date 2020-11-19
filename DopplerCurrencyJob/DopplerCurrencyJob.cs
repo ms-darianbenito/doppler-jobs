@@ -36,18 +36,14 @@ namespace Doppler.Currency.Job
         private async Task<DopplerCurrencyJobResponse> RunAsync()
         {
             var taskFailed = false;
-
             var resultBuffer = new StringBuilder();
-            var message = "Getting currency per each code enabled.";
-            _logger.LogInformation(message);
-            resultBuffer.Append(message).AppendLine();
+            LogAndAppendToStringBuilder(resultBuffer, "Getting currency per each code enabled.");
 
             var currencyDto = await _dopplerCurrencyService.GetCurrencyByCode();
+
             if (!currencyDto.Any())
             {
-                message = "Non-existent currencies for this date, please check for errors.";
-                _logger.LogInformation(message);
-                resultBuffer.Append(message).AppendLine();
+                LogAndAppendToStringBuilder(resultBuffer, "Non-existent currencies for this date, please check for errors.");
                 return new DopplerCurrencyJobResponse()
                 {
                     CurrencyList = new List<CurrencyResponse>(),
@@ -55,60 +51,40 @@ namespace Doppler.Currency.Job
                 };
             }
 
-            message = "Currency retrieved by code:";
-            _logger.LogInformation(message);
-            resultBuffer.Append(message).AppendLine();
-            resultBuffer.Append(JsonSerializer.Serialize(currencyDto)).AppendLine();
+            LogAndAppendToStringBuilder(resultBuffer, "Currency retrieved by code:");
+            AppendSerializedToStringBuilder(resultBuffer, currencyDto);
 
             try
             {
-                message = "Sending currency data to Doppler SAP system.";
-                _logger.LogInformation(message);
-                resultBuffer.Append(message).AppendLine();
-
+                LogAndAppendToStringBuilder(resultBuffer, "Sending currency data to Doppler SAP system.");
                 var result = await _dopplerSapService.SendCurrency(currencyDto);
 
                 if (!result.IsSuccessStatusCode)
                 {
-                    message = $"{result.ReasonPhrase}. Error sending currency to Doppler SAP Api.";
-                    _logger.LogError(message);
-                    resultBuffer.Append(message).AppendLine();
+                    LogAndAppendToStringBuilder(resultBuffer, $"{result.ReasonPhrase}. Error sending currency to Doppler SAP Api.");
                     taskFailed = true;
                 }
+
+                LogAndAppendToStringBuilder(resultBuffer, "Sent currency data to Doppler SAP system.");
             }
             catch (Exception e)
             {
-                message = $"An exception occurred when sending currency to Doppler SAP Api. Exception: {e.Message}";
-                _logger.LogError(message);
-                resultBuffer.Append(message).AppendLine();
+                LogAndAppendToStringBuilder(resultBuffer, $"An exception occurred when sending currency to Doppler SAP Api. Exception: {e.Message}");
                 taskFailed = true;
-            }
-            finally
-            {
-                message = "Sent currency data to Doppler SAP system.";
-                _logger.LogInformation(message);
-                resultBuffer.Append(message).AppendLine();
             }
 
             try
             {
-                message = "Insert currency data into Doppler Database.";
-                _logger.LogInformation(message);
+                LogAndAppendToStringBuilder(resultBuffer, "Insert currency data into Doppler Database.");
+
                 await _dopplerCurrencyService.InsertCurrencyIntoDataBase(currencyDto);
-                resultBuffer.Append(message).AppendLine();
+
+                LogAndAppendToStringBuilder(resultBuffer, "Inserted currency data into Doppler Database.");
             }
             catch (Exception e)
             {
-                message = $"An exception occurred when Insert currency data into Doppler Database. Exception: {e.Message}";
-                _logger.LogError(message);
-                resultBuffer.Append(message).AppendLine();
+                LogAndAppendToStringBuilder(resultBuffer, $"An exception occurred when Insert currency data into Doppler Database. Exception: {e.Message}");
                 taskFailed = true;
-            }
-            finally
-            {
-                message = "Inserted currency data into Doppler Database.";
-                _logger.LogInformation(message);
-                resultBuffer.Append(message).AppendLine();
             }
 
             if (taskFailed)
@@ -121,6 +97,17 @@ namespace Doppler.Currency.Job
                 CurrencyList = currencyDto,
                 Message = resultBuffer.ToString()
             };
+        }
+
+        private void LogAndAppendToStringBuilder(StringBuilder buffer, string message)
+        {
+            _logger.LogInformation(message);
+            buffer.Append(message).AppendLine();
+        }
+        
+        private void AppendSerializedToStringBuilder(StringBuilder buffer, IList<CurrencyResponse> currencyDto)
+        {
+            buffer.Append(JsonSerializer.Serialize(currencyDto)).AppendLine();
         }
     }
 }
