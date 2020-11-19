@@ -1,8 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Net.Http;
+using System.Threading.Tasks;
 using CrossCutting.DopplerSapService;
 using CrossCutting.DopplerSapService.Entities;
 using Doppler.Currency.Job;
 using Doppler.Currency.Job.DopplerCurrencyService;
+using Doppler.Currency.Job.Exceptions;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -59,6 +63,12 @@ namespace Doppler.Jobs.Test.Integration
                     }
                 });
 
+            _dopplerSapServiceMock.Setup(x => x.SendCurrency(It.IsAny<IList<CurrencyResponse>>()))
+                .ReturnsAsync(new HttpResponseMessage
+                {
+                    StatusCode = System.Net.HttpStatusCode.OK
+                });
+
             var job = new DopplerCurrencyJob(
                 _loggerMock.Object,
                 _dopplerCurrencyServiceMock.Object,
@@ -66,7 +76,7 @@ namespace Doppler.Jobs.Test.Integration
 
             var data = job.Run();
 
-            Assert.Equal(3, data.Count);
+            Assert.Equal(3, data.CurrencyList.Count);
             _loggerMock.VerifyLogger(LogLevel.Information, "Getting currency per each code enabled.", Times.Once());
             _loggerMock.VerifyLogger(LogLevel.Information, "Sending currency data to Doppler SAP system.", Times.Once());
             _loggerMock.VerifyLogger(LogLevel.Information, "Insert currency data into Doppler Database.", Times.Once());
