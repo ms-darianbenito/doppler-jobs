@@ -62,10 +62,13 @@ namespace Doppler.Currency.Job
                 if (!result.IsSuccessStatusCode)
                 {
                     LogAndAppendToStringBuilder(resultBuffer, $"{result.ReasonPhrase}. Error sending currency to Doppler SAP Api.");
+                    LogAndAppendToStringBuilder(resultBuffer, "Error sending currency to Doppler SAP Api.");
                     taskFailed = true;
                 }
-
-                LogAndAppendToStringBuilder(resultBuffer, "Sent currency data to Doppler SAP system.");
+                else
+                {
+                    LogAndAppendToStringBuilder(resultBuffer, "Sent currency data to Doppler SAP system.");
+                }
             }
             catch (Exception e)
             {
@@ -84,7 +87,7 @@ namespace Doppler.Currency.Job
             catch (Exception e)
             {
                 LogAndAppendToStringBuilder(resultBuffer, $"An exception occurred when Insert currency data into Doppler Database. Exception: {e.Message}");
-                taskFailed = true;
+                taskFailed = true;  
             }
 
             if (taskFailed)
