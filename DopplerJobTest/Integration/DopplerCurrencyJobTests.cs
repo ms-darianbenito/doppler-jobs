@@ -113,7 +113,7 @@ namespace Doppler.Jobs.Test.Integration
             // act & assert
             Assert.Throws<DopplerCurrencyJobException>(() => job.Run());
 
-            _loggerMock.VerifyLogger(LogLevel.Information, "Forbidden. Error sending currency to Doppler SAP Api.", Times.Once());
+            _loggerMock.VerifyLogger(LogLevel.Error, "Forbidden. Error sending currency to Doppler SAP Api.", Times.Once());
             _loggerMock.VerifyLogger(LogLevel.Information, "Inserted currency data into Doppler Database.", Times.Once());
         }
 
