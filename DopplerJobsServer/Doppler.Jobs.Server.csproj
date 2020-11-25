@@ -4,6 +4,8 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UserSecretsId>a567537b-4688-4470-8aec-97bc08e18484</UserSecretsId>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+    <AssemblyVersion>2020.11.25.2</AssemblyVersion>
+    <FileVersion>2020.11.25.2</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -29,12 +31,6 @@
 
   <ItemGroup>
     <Folder Include="Resources\Jwt\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Update="Resources\Jwt\key.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
 
 
