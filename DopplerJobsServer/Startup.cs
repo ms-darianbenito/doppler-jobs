@@ -95,7 +95,8 @@ namespace Doppler.Jobs.Server
             app.UseHangfireDashboard("/hangfire", new DashboardOptions
             {
                 PrefixPath = Configuration["PrefixHangfireDashboard"],
-                Authorization = new[] {new HangfireAuthorizationFilter()}
+                Authorization = new[] {new HangfireAuthorizationFilter()},
+                IsReadOnlyFunc = context => !env.IsDevelopment()
             });
 
             app.UseHangfireServer(new BackgroundJobServerOptions
