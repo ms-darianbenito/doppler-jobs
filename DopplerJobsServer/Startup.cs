@@ -94,9 +94,9 @@ namespace Doppler.Jobs.Server
 
             app.UseHangfireDashboard("/hangfire", new DashboardOptions
             {
-                PrefixPath = Configuration["PrefixHangfireDashboard"],
+                //PrefixPath = Configuration["PrefixHangfireDashboard"],
                 Authorization = new[] {new HangfireAuthorizationFilter()},
-                IsReadOnlyFunc = context => !env.IsDevelopment()
+                //IsReadOnlyFunc = context => !env.IsDevelopment()
             });
 
             app.UseHangfireServer(new BackgroundJobServerOptions
@@ -125,7 +125,7 @@ namespace Doppler.Jobs.Server
         private void ConfigureJobsScheduler()
         {
             JobStorage.Current = new SQLiteStorage("Hangfire.db");
-            
+
             var tz = TimeZoneHelper.GetTimeZoneByOperativeSystem(Configuration["TimeZoneJobs"]);
 
             RecurringJob.AddOrUpdate<DopplerBillingJob>(
