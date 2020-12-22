@@ -20,5 +20,6 @@
         public double ExtraEmailsFee { get; set; }
         public string PurchaseOrder { get; set; }
         public string FiscalID { get; set; }
+        public int BillingSystemId { get; set; } = 9;
     }
 }

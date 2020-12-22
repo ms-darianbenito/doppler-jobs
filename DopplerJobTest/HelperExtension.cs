@@ -21,6 +21,18 @@ namespace Doppler.Jobs.Test
                 times);
         }
 
+        public static void VerifyLogger(this Mock<ILogger<DopplerBillingUsJob>> logger, LogLevel logLevel, string textCheck, Times times)
+        {
+            logger.Verify(
+                x => x.Log(
+                    logLevel,
+                    It.IsAny<EventId>(),
+                    It.Is<It.IsAnyType>((o, t) => o.ToString().Equals(textCheck)),
+                    It.IsAny<Exception>(),
+                    (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()),
+                times);
+        }
+
         public static void VerifyLogger(this Mock<ILogger<DopplerCurrencyJob>> logger, LogLevel logLevel, string textCheck, Times times)
         {
             logger.Verify(

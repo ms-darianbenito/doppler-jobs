@@ -73,6 +73,7 @@ namespace Doppler.Jobs.Server
 
             services.AddTransient<IDbConnectionFactory, DbConnectionFactory>();
             services.Configure<DopplerBillingJobSettings>(Configuration.GetSection("Jobs:DopplerBillingJobSettings"));
+            services.Configure<DopplerBillingUsJobSettings>(Configuration.GetSection("Jobs:DopplerBillingUsJobSettings"));
             services.AddTransient<IDopplerRepository, DopplerRepository>();
 
             ConfigureJobsScheduler();
@@ -137,6 +138,12 @@ namespace Doppler.Jobs.Server
                 Configuration["Jobs:DopplerCurrencyJob:Identifier"],
                 job => job.Run(),
                 Configuration["Jobs:DopplerCurrencyJob:IntervalCronExpression"],
+                TimeZoneInfo.FindSystemTimeZoneById(tz));
+
+            RecurringJob.AddOrUpdate<DopplerBillingUsJob>(
+                Configuration["Jobs:DopplerBillingUsJobSettings:Identifier"],
+                job => job.Run(),
+                Configuration["Jobs:DopplerBillingUsJobSettings:IntervalCronExpression"],
                 TimeZoneInfo.FindSystemTimeZoneById(tz));
         }
     }
