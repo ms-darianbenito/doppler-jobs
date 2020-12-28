@@ -9,24 +9,24 @@ using Microsoft.Extensions.Options;
 
 namespace Doppler.Billing.Job
 {
-    public class DopplerBillingJob
+    public class DopplerBillingUsJob
     {
-        private readonly ILogger<DopplerBillingJob> _logger;
+        private readonly ILogger<DopplerBillingUsJob> _logger;
         
         private readonly IDopplerSapService _dopplerSapService;
         private readonly IDopplerRepository _dopplerRepository;
-        private readonly IOptionsMonitor<DopplerBillingJobSettings> _dopplerBillingJobSettings;
+        private readonly IOptionsMonitor<DopplerBillingUsJobSettings> _dopplerBillingUsJobSettings;
 
-        public DopplerBillingJob(
-            ILogger<DopplerBillingJob> logger,
+        public DopplerBillingUsJob(
+            ILogger<DopplerBillingUsJob> logger,
             IDopplerSapService dopplerSapService,
             IDopplerRepository dopplerRepository,
-            IOptionsMonitor<DopplerBillingJobSettings> dopplerBillingJobSettings)
+            IOptionsMonitor<DopplerBillingUsJobSettings> dopplerBillingUsJobSettings)
         {
             _logger = logger;
             _dopplerSapService = dopplerSapService;
             _dopplerRepository = dopplerRepository;
-            _dopplerBillingJobSettings = dopplerBillingJobSettings;
+            _dopplerBillingUsJobSettings = dopplerBillingUsJobSettings;
         }
 
         [AutomaticRetry(OnAttemptsExceeded = AttemptsExceededAction.Delete, Attempts = 0)]
@@ -35,7 +35,7 @@ namespace Doppler.Billing.Job
         private async Task RunAsync()
         {
             _logger.LogInformation("Getting data from Doppler database.");
-            var billingData = await _dopplerRepository.GetUserBillingInformation(_dopplerBillingJobSettings.CurrentValue.StoredProcedures);
+            var billingData = await _dopplerRepository.GetUserBillingInformation(_dopplerBillingUsJobSettings.CurrentValue.StoredProcedures);
 
             if (billingData.Any())
             {

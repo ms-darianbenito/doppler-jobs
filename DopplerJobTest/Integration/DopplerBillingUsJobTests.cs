@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using CrossCutting.DopplerSapService;
+﻿using CrossCutting.DopplerSapService;
 using CrossCutting.DopplerSapService.Entities;
 using Doppler.Billing.Job;
 using Doppler.Billing.Job.Database;
@@ -7,38 +6,39 @@ using Doppler.Billing.Job.Settings;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Doppler.Jobs.Test.Integration
 {
-    public class DopplerBillingJobTests
+    public class DopplerBillingUsJobTests
     {
-        
-        private readonly Mock<ILogger<DopplerBillingJob>> _loggerMock;
+
+        private readonly Mock<ILogger<DopplerBillingUsJob>> _loggerMock;
         private readonly Mock<IDopplerSapService> _dopplerSapServiceMock;
         private readonly Mock<IDopplerRepository> _dopplerRepositoryMock;
-        private readonly Mock<IOptionsMonitor<DopplerBillingJobSettings>> _dopplerBillingJobSettingsMock;
+        private readonly Mock<IOptionsMonitor<DopplerBillingUsJobSettings>> _dopplerBillingUsJobSettingsMock;
 
-        public DopplerBillingJobTests()
+        public DopplerBillingUsJobTests()
         {
-            _loggerMock = new Mock<ILogger<DopplerBillingJob>>();
+            _loggerMock = new Mock<ILogger<DopplerBillingUsJob>>();
             _dopplerSapServiceMock = new Mock<IDopplerSapService>();
             _dopplerRepositoryMock = new Mock<IDopplerRepository>();
-            _dopplerBillingJobSettingsMock = new Mock<IOptionsMonitor<DopplerBillingJobSettings>>();
+            _dopplerBillingUsJobSettingsMock = new Mock<IOptionsMonitor<DopplerBillingUsJobSettings>>();
         }
 
         [Fact]
         public void DopplerBillingJob_ShouldBeNoSendDataToSap_WhenListIsHaveOneCurrencyArs()
         {
-            _dopplerBillingJobSettingsMock.Setup(s => s.CurrentValue).Returns(new DopplerBillingJobSettings());
+            _dopplerBillingUsJobSettingsMock.Setup(s => s.CurrentValue).Returns(new DopplerBillingUsJobSettings());
             _dopplerRepositoryMock.Setup(x => x.GetUserBillingInformation(It.IsAny<List<string>>()))
                 .ReturnsAsync(new List<UserBilling>());
 
-            var job = new DopplerBillingJob(
+            var job = new DopplerBillingUsJob(
                 _loggerMock.Object,
                 _dopplerSapServiceMock.Object,
                 _dopplerRepositoryMock.Object,
-                _dopplerBillingJobSettingsMock.Object);
+                _dopplerBillingUsJobSettingsMock.Object);
 
             job.Run();
 
@@ -48,18 +48,18 @@ namespace Doppler.Jobs.Test.Integration
         [Fact]
         public void DopplerBillingJob_ShouldBeSendDataToSap_WhenListIsHaveOneUserBillingCreated()
         {
-            _dopplerBillingJobSettingsMock.Setup(s => s.CurrentValue).Returns(new DopplerBillingJobSettings());
+            _dopplerBillingUsJobSettingsMock.Setup(s => s.CurrentValue).Returns(new DopplerBillingUsJobSettings());
             _dopplerRepositoryMock.Setup(x => x.GetUserBillingInformation(It.IsAny<List<string>>()))
                 .ReturnsAsync(new List<UserBilling>
                 {
                     new UserBilling()
                 });
 
-            var job = new DopplerBillingJob(
+            var job = new DopplerBillingUsJob(
                 _loggerMock.Object,
                 _dopplerSapServiceMock.Object,
                 _dopplerRepositoryMock.Object,
-                _dopplerBillingJobSettingsMock.Object);
+                _dopplerBillingUsJobSettingsMock.Object);
 
             job.Run();
 
@@ -70,7 +70,7 @@ namespace Doppler.Jobs.Test.Integration
         [Fact]
         public void DopplerBillingJob_ShouldBeSendDataToSap_WhenStoredProceduresAreRunCorrectly()
         {
-            _dopplerBillingJobSettingsMock.Setup(s => s.CurrentValue).Returns(new DopplerBillingJobSettings());
+            _dopplerBillingUsJobSettingsMock.Setup(s => s.CurrentValue).Returns(new DopplerBillingUsJobSettings());
             _dopplerRepositoryMock.Setup(x => x.GetUserBillingInformation(It.IsAny<List<string>>()))
                 .ReturnsAsync(new List<UserBilling>
                 {
@@ -78,11 +78,11 @@ namespace Doppler.Jobs.Test.Integration
                     new UserBilling()
                 });
 
-            var job = new DopplerBillingJob(
+            var job = new DopplerBillingUsJob(
                 _loggerMock.Object,
                 _dopplerSapServiceMock.Object,
                 _dopplerRepositoryMock.Object,
-                _dopplerBillingJobSettingsMock.Object);
+                _dopplerBillingUsJobSettingsMock.Object);
 
             job.Run();
 

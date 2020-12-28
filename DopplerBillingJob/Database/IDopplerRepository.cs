@@ -6,6 +6,6 @@ namespace Doppler.Billing.Job.Database
 {
     public interface IDopplerRepository
     {
-        public Task<IList<UserBilling>> GetUserBillingInformation();
+        public Task<IList<UserBilling>> GetUserBillingInformation(List<string> storedProcedures);
     }
 }
