@@ -52,14 +52,6 @@ pipeline {
                 sh 'sh build-n-publish.sh --commit=${GIT_COMMIT} --version=${TAG_NAME}'
             }
         }
-        stage('Generate version') {
-            when {
-                branch 'master'
-            }
-            steps {
-                sh 'echo "TODO: generate a tag automatically"'
-            }
-		}
     }
 }
 
